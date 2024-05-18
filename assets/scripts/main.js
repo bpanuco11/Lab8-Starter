@@ -15,6 +15,9 @@ window.addEventListener('DOMContentLoaded', init);
 
 // Starts the program, all function calls trace back here
 async function init() {
+
+  // clear localStorage for debugging purposes!
+  localStorage.clear();
   // initialize ServiceWorker
   initializeServiceWorker();
   // Get the recipes from localStorage
@@ -44,6 +47,24 @@ function initializeServiceWorker() {
   /*******************/
   // We first must register our ServiceWorker here before any of the code in
   // sw.js is executed.
+  // B1. 
+  if ('serviceWorker' in navigator) {
+    // B2. 
+    window.addEventListener('load', async () => {
+      try {
+        // B3.
+        const serviceRegister = await navigator.serviceWorker.register('./sw.js');
+        // B4.
+        console.log('Service Worker Successful:', serviceRegister);
+      } catch (error) {
+        // B5. 
+        console.error('Service Worker Failure:', error);
+      }
+    });
+  } else {
+    console.log('Error, Service Worker not Supported by Browser.');
+  }
+
   // B1. TODO - Check if 'serviceWorker' is supported in the current browser
   // B2. TODO - Listen for the 'load' event on the window object.
   // Steps B3-B6 will be *inside* the event listener's function created in B2
@@ -70,8 +91,9 @@ async function getRecipes() {
   //            If there are recipes, return them.
   /**************************/
   const storedRecipes = localStorage.getItem('recipes');
+  //console.log(storedRecipes);
   if (storedRecipes) {
-    return JSON.parse(storedRecipes);
+    return JSON.parse(storedRecipes) || [];
     //return JSON.parse(storedRecipes) || [];
   }
 
@@ -98,6 +120,7 @@ async function getRecipes() {
       try { 
         // A6
         const response = await fetch(url);
+        //console.log(url);
         // A7. 
         const recipe = await response.json();
         // A8. 
